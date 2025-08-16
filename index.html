@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一定要天天开心</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF4B91',
+                        secondary: '#9376E0',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3);
+            }
+            .text-shadow-lg {
+                text-shadow: 0 4px 20px rgba(255, 255, 255, 0.5);
+            }
+            .heart {
+                position: absolute;
+                pointer-events: none;
+                animation: float 3s ease-in-out forwards;
+            }
+            @keyframes float {
+                0% {
+                    transform: translateY(0) scale(1);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(-100px) scale(0.5);
+                    opacity: 0;
+                }
+            }
+            .firework {
+                position: absolute;
+                bottom: 0;
+                width: 3px;
+                height: 20px;
+                background: linear-gradient(to top, transparent, #fff);
+                transform-origin: bottom center;
+            }
+            .firework-particle {
+                position: absolute;
+                border-radius: 50%;
+                pointer-events: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen overflow-hidden">
+    <!-- 特效容器 -->
+    <div id="effects-container" class="fixed inset-0 pointer-events-none z-0"></div>
+    
+    <!-- 中央文本 -->
+    <div class="relative z-10 flex items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl">
+            <p class="text-white text-lg sm:text-xl md:text-2xl mb-6 leading-relaxed text-shadow">
+                陌生人，谢谢你打开了这个链接，这不是什么诈骗网站。
+            </p>
+            <p class="text-white text-lg sm:text-xl md:text-2xl mb-6 leading-relaxed text-shadow">
+                对了，到这里来，我只想告诉你一件事
+            </p>
+            <p class="text-white text-2xl sm:text-3xl md:text-4xl font-bold leading-tight text-shadow-lg">
+                一定要天天开心！
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 烟花效果
+        function createFirework() {
+            const effectsContainer = document.getElementById('effects-container');
+            const firework = document.createElement('div');
+            firework.classList.add('firework');
+            
+            // 随机水平位置
+            const x = Math.random() * 100;
+            firework.style.left = `${x}%`;
+            
+            // 随机颜色
+            const colors = ['#FF4B91', '#9376E0', '#4DD0E1', '#FFD740', '#8BC34A'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            firework.style.background = `linear-gradient(to top, transparent, ${color})`;
+            
+            effectsContainer.appendChild(firework);
+            
+            // 发射动画
+            const launchDuration = 1500 + Math.random() * 1000; // 1.5-2.5秒
+            let startTime;
+            
+            function launchAnimation(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const progress = (timestamp - startTime) / launchDuration;
+                
+                if (progress < 1) {
+                    // 上升高度 (70-90% 屏幕高度)
+                    const maxHeight = 70 + Math.random() * 20;
+                    firework.style.height = `${progress * maxHeight}vh`;
+                    requestAnimationFrame(launchAnimation);
+                } else {
+                    // 烟花到达顶点，绽放
+                    explodeFirework(firework, color);
+                    // 移除原始烟花
+                    setTimeout(() => {
+                        firework.remove();
+                    }, 50);
+                }
+            }
+            
+            requestAnimationFrame(launchAnimation);
+        }
+        
+        // 烟花绽放
+        function explodeFirework(firework, color) {
+            const effectsContainer = document.getElementById('effects-container');
+            const particlesCount = 50 + Math.floor(Math.random() * 30); // 50-80个粒子
+            const x = firework.offsetLeft + firework.offsetWidth / 2;
+            const y = firework.offsetTop;
+            
+            for (let i = 0; i < particlesCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('firework-particle');
+                
+                // 粒子大小
+                const size = 2 + Math.random() * 4;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // 位置
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                
+                // 颜色
+                particle.style.backgroundColor = color;
+                
+                effectsContainer.appendChild(particle);
+                
+                // 粒子动画
+                animateParticle(particle);
+            }
+        }
+        
+        // 粒子动画
+        function animateParticle(particle) {
+            const duration = 1500 + Math.random() * 1000; // 1.5-2.5秒
+            const angle = Math.random() * Math.PI * 2; // 随机角度
+            const speed = 2 + Math.random() * 4; // 随机速度
+            const vx = Math.cos(angle) * speed;
+            const vy = Math.sin(angle) * speed;
+            
+            let startTime;
+            let opacity = 1;
+            
+            function update(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const progress = (timestamp - startTime) / duration;
+                
+                if (progress < 1) {
+                    // 移动粒子
+                    const x = parseFloat(particle.style.left) + vx;
+                    const y = parseFloat(particle.style.top) + vy;
+                    particle.style.left = `${x}px`;
+                    particle.style.top = `${y}px`;
+                    
+                    // 逐渐消失
+                    opacity = 1 - progress;
+                    particle.style.opacity = opacity;
+                    
+                    requestAnimationFrame(update);
+                } else {
+                    // 动画结束，移除粒子
+                    particle.remove();
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+        
+        // 爱心点击效果
+        function createHeart(x, y) {
+            const effectsContainer = document.getElementById('effects-container');
+            const heart = document.createElement('div');
+            
+            // 随机爱心大小
+            const size = 16 + Math.random() * 24;
+            
+            heart.innerHTML = '<i class="fa fa-heart"></i>';
+            heart.classList.add('heart');
+            heart.style.left = `${x}px`;
+            heart.style.top = `${y}px`;
+            heart.style.fontSize = `${size}px`;
+            
+            // 随机颜色
+            const colors = ['#FF4B91', '#FF6B6B', '#FF8E8E', '#FFB3B3'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            heart.style.color = color;
+            
+            // 随机旋转
+            const rotation = (Math.random() - 0.5) * 40; // -20到20度
+            heart.style.transform = `rotate(${rotation}deg)`;
+            
+            effectsContainer.appendChild(heart);
+            
+            // 动画结束后移除
+            setTimeout(() => {
+                heart.remove();
+            }, 3000);
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 每秒创建一个烟花
+            setInterval(createFirework, 1000);
+            
+            // 初始创建一个烟花
+            createFirework();
+            
+            // 点击事件创建爱心
+            document.addEventListener('click', (e) => {
+                // 每次点击创建3-5个爱心
+                const heartsCount = 3 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < heartsCount; i++) {
+                    // 稍微分散一点
+                    const offsetX = (Math.random() - 0.5) * 40;
+                    const offsetY = (Math.random() - 0.5) * 40;
+                    createHeart(e.clientX + offsetX, e.clientY + offsetY);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
