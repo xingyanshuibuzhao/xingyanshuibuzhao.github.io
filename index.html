@@ -57,6 +57,31 @@
                 border-radius: 50%;
                 pointer-events: none;
             }
+            .lyric-line {
+                opacity: 0;
+                transform: translateY(20px);
+                transition: all 0.8s ease-out;
+            }
+            .lyric-line.active {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            .lyric-container {
+                transition: transform 0.5s ease-out;
+            }
+            .click-prompt {
+                opacity: 1;
+                transition: opacity 0.5s ease;
+                animation: pulse 1.5s infinite;
+            }
+            @keyframes pulse {
+                0%, 100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.6;
+                }
+            }
         }
     </style>
 </head>
@@ -65,21 +90,69 @@
     <div id="effects-container" class="fixed inset-0 pointer-events-none z-0"></div>
     
     <!-- 中央文本 -->
-    <div class="relative z-10 flex items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-2xl">
-            <p class="text-white text-lg sm:text-xl md:text-2xl mb-6 leading-relaxed text-shadow">
-                陌生人，谢谢你打开了这个链接，这不是什么诈骗网站。
-            </p>
-            <p class="text-white text-lg sm:text-xl md:text-2xl mb-6 leading-relaxed text-shadow">
-                对了，到这里来，我只想告诉你一件事
-            </p>
-            <p class="text-white text-2xl sm:text-3xl md:text-4xl font-bold leading-tight text-shadow-lg">
-                一定要天天开心！
-            </p>
+    <div class="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mb-8">
+            <div id="lyric-container" class="lyric-container min-h-[250px]">
+                <p class="lyric-line text-white text-lg sm:text-xl md:text-2xl mb-6 leading-relaxed text-shadow">
+                    陌生人，谢谢你打开了这个链接，首先我要告诉你：
+                </p>
+                <p class="lyric-line text-white text-lg sm:text-xl md:text-2xl mb-6 leading-relaxed text-shadow">
+                    这不是什么助力网站，更不是什么诈骗网站
+                </p>
+                <p class="lyric-line text-white text-lg sm:text-xl md:text-2xl mb-6 leading-relaxed text-shadow">
+                    放轻松好了
+                </p>
+                <p class="lyric-line text-white text-lg sm:text-xl md:text-2xl mb-6 leading-relaxed text-shadow">
+                    能来到这里，我只想告诉你一件事
+                </p>
+                <p class="lyric-line text-white text-2xl sm:text-3xl md:text-4xl font-bold leading-tight text-shadow-lg">
+                    不管过去怎么样，当下都一定要开心！
+                </p>
+            </div>
+            
+            <!-- 继续点击提示 -->
+            <div id="click-prompt" class="click-prompt mt-8 text-white text-lg sm:text-xl text-shadow">
+                继续点击屏幕 <i class="fa fa-hand-pointer-o ml-2"></i>
+            </div>
         </div>
     </div>
 
     <script>
+        // 歌词显示逻辑
+        let currentLine = 0;
+        const totalLines = document.querySelectorAll('.lyric-line').length;
+        const lyricContainer = document.getElementById('lyric-container');
+        const clickPrompt = document.getElementById('click-prompt');
+        
+        // 显示当前行
+        function showNextLine() {
+            if (currentLine < totalLines) {
+                const lines = document.querySelectorAll('.lyric-line');
+                lines[currentLine].classList.add('active');
+                
+                // 向上滚动效果
+                if (currentLine > 0) {
+                    const lineHeight = lines[currentLine].offsetHeight + 24; // 行高 + 间距
+                    lyricContainer.style.transform = `translateY(-${lineHeight * (currentLine - 2 < 0 ? 0 : currentLine - 2)}px)`;
+                }
+                
+                currentLine++;
+                
+                // 所有行都显示后隐藏提示
+                if (currentLine >= totalLines) {
+                    clickPrompt.style.opacity = 0;
+                    setTimeout(() => {
+                        clickPrompt.style.display = 'none';
+                    }, 500);
+                }
+            }
+        }
+        
+        // 初始显示第一行
+        document.addEventListener('DOMContentLoaded', () => {
+            showNextLine();
+        });
+        
         // 烟花效果
         function createFirework() {
             const effectsContainer = document.getElementById('effects-container');
@@ -228,8 +301,11 @@
             // 初始创建一个烟花
             createFirework();
             
-            // 点击事件创建爱心
+            // 点击事件 - 创建爱心并显示下一行文本
             document.addEventListener('click', (e) => {
+                // 显示下一行文本
+                showNextLine();
+                
                 // 每次点击创建3-5个爱心
                 const heartsCount = 3 + Math.floor(Math.random() * 3);
                 for (let i = 0; i < heartsCount; i++) {
